@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dodaj Inbox</title>
+</head>
+<body>
+    <h1>Dodaj nowy inbox</h1>
+    <form method="post" action="/inboxes/add">
+        <input type="text" name="login" required />
+        <input type="password" name="password" required />
+        <input type="text" name="smtp_server" required />
+        <input type="number" name="smtp_port" required />
+        <input type="text" name="imap_server" required />
+        <input type="number" name="imap_port" required />
+        <button type="submit">Dodaj Inbox</button>
+    </form>
+    <br>
+    <a href="/admin">Wróć do dashboard</a>
+</body>
+</html>

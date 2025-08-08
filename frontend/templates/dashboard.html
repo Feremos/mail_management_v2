@@ -8,5 +8,30 @@
     <form action="/users/logout" method="POST" class="d-inline">
         <button type="submit" class="btn btn-outline-danger">Wyloguj się</button>
     </form>
+
+    <hr>
+    <h3>Dodaj nową skrzynkę (login i hasło):</h3>
+    <form action="/inboxes/select" method="POST">
+        <div class="mb-3">
+            <label for="login" class="form-label">Login (adres e-mail)</label>
+            <input type="email" class="form-control" id="login" name="login" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Hasło</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Dodaj skrzynkę</button>
+    </form>
+    <h3>Twoje e-maile:</h3>
+    {% if emails %}
+        <ul>
+            {% for email in emails %}
+                <li>{{ email.subject }} - {{ email.sent_from }} - {{ email.date_received.strftime('%Y-%m-%d %H:%M') }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Brak wiadomości e-mail.</p>
+    {% endif %}
 </div>
 {% endblock %}

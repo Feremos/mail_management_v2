@@ -10,11 +10,12 @@ from datetime import datetime, timedelta
 from jose import jwt
 from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
-from app.config import SECRET_KEY, ALGORITHM
+from app.config import SECRET_KEY, ALGORITHM, FERNET_KEY
 from datetime import datetime, timezone
+from cryptography.fernet import Fernet
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+fernet = Fernet(FERNET_KEY.encode())
 # Konfiguracja hashowania haseł
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -25,6 +26,14 @@ def get_password_hash(password):
 # Password verification
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
+
+def encrypt_password(password: str) -> str:
+    """Szyfruje hasło"""
+    return fernet.encrypt(password.encode()).decode()
+
+def decrypt_password(encrypted_password: str) -> str:
+    """Odszyfrowuje hasło"""
+    return fernet.decrypt(encrypted_password.encode()).decode()
 
 # JWT token generation
 def create_access_token(username: str, expires_delta: timedelta = None):

@@ -1,11 +1,12 @@
 from fastapi import FastAPI 
 from fastapi.responses import RedirectResponse
 from app.database import engine, Base
-from routers import users,inboxes,emails
+from routers import users,inboxes,emails, admin
 
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from routers.middleware import AuthRedirectMiddleware
 from pathlib import Path
 
 # Ścieżki: idź do katalogu nadrzędnego projektu
@@ -32,9 +33,11 @@ app.add_middleware(
 )
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name='static')
 
+app.add_middleware(AuthRedirectMiddleware)
 app.include_router(users.router)
 app.include_router(inboxes.router)
 app.include_router(emails.router)
+app.include_router(admin.router)
 
 @app.get("/")
 def root():

@@ -3,7 +3,7 @@ from app.security import create_access_token, verify_password, get_token_exp
 from app.dependencies import get_current_user, get_db  # Importuj z dependencies
 from app.schemas import UserCreate, UserResponse, UserLogin, Token
 from app.models import User
-from app.crud import crud_create_user, crud_add_revoked_token
+from app.crud import crud_create_user, crud_add_revoked_token, crud_get_emails_for_user
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, Response
 from fastapi.responses import RedirectResponse
@@ -89,15 +89,23 @@ def login_page(request: Request):
 def read_user_me(current_user: User = Depends(get_current_user)): # get current user
     return current_user
 
+
 @router.get("/dashboard")
-async def dashboard(request: Request, current_user: User = Depends(get_current_user)):
-    # Jeśli get_current_user zwróci redirect (u niezalogowanego), zwróć go od razu
-    if isinstance(current_user, RedirectResponse):
-        return current_user
+async def dashboard(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user is not None:
+        emails = crud_get_emails_for_user(db, user_id=current_user.user_id)
 
     return templates.TemplateResponse(
         "dashboard.html",
-        {"request": request, "current_user": current_user}
+        {
+            "request": request,
+            "current_user": current_user,
+            "emails": emails,
+        }
     )
 
 # Endpoint do wylogowania

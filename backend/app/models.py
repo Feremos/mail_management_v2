@@ -42,13 +42,13 @@ class Email(Base):
     
 class UserSelectedInboxes(Base):
     __tablename__ = "user_selected_inboxes"
-    id = Column(Integer, primary_key = True, index=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"),nullable=False)
-    inbox_id = Column(Integer, ForeignKey("inboxes.inbox_id"),nullable=False)
+    user_id = Column(Integer, ForeignKey("users.user_id"), primary_key=True)
+    inbox_id = Column(Integer, ForeignKey("inboxes.inbox_id"), primary_key=True)
     
-    # Relacje
     user = relationship("User", back_populates="selected_inboxes")
     inbox = relationship("Inbox", back_populates="user_selections")
+
+
     
     
 
