@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Rejestracja{% endblock %}
+
+{% block head %}
+{{ super() }}
+<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center">Utwórz konto</h3>
+
+                <!-- Formularz z HTMX i json-enc -->
+                <form 
+                    hx-post="/users/create"
+                    hx-ext="json-enc"  
+                    hx-target="#response"
+                >
+                    <div class="mb-3">
+                        <label>Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Zarejestruj się</button>
+                </form>
+
+                <div id="response" class="mt-3 text-center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sukcesu -->
+<div id="success-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; text-align: center;">
+        <h4>✅ Rejestracja udana!</h4>
+        <p>Zostałeś pomyślnie zarejestrowany.</p>
+        <button onclick="document.getElementById('success-modal').style.display='none'; window.location='/login'" class="btn btn-primary">
+            Zaloguj się
+        </button>
+    </div>
+</div>
+{% endblock %}

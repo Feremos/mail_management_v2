@@ -1,0 +1,51 @@
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy.orm import relationship
+from app.database import Base
+from datetime import datetime
+
+class User(Base):
+    __tablename__ = "users"
+    
+    user_id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    password_hashed = Column(String)
+    
+    selected_inboxes = relationship("UserSelectedInboxes", back_populates="user", cascade="all, delete-orphan")
+
+class Inbox(Base):
+    __tablename__ = "inboxes"
+    
+    inbox_id = Column(Integer, primary_key=True, index=True)
+    login = Column(String)
+    password_encrypted = Column(String)
+    smtp_server = Column(String)
+    smtp_port = Column(Integer)
+    imap_server = Column(String)
+    imap_port = Column(Integer)
+    
+    user_selections = relationship("UserSelectedInboxes", back_populates="inbox", cascade="all, delete-orphan")
+
+class Email(Base):
+    __tablename__ = "emails"
+    
+    email_id = Column(Integer, primary_key=True, index=True)
+    inbox_id = Column(Integer, ForeignKey("inboxes.inbox_id"))
+    sent_from = Column(String)
+    sent_to = Column(Text)
+    subject = Column(String)
+    body = Column(Text)
+    suggested_reply = Column(Text)
+    response_text = Column(Text, nullable=True)
+    date_received = Column(DateTime, default=datetime.utcnow)
+    responded = Column(Boolean, default=False)
+    archived = Column(Boolean, default=False)
+    
+class UserSelectedInboxes(Base):
+    __tablename__ = "user_selected_inboxes"
+    id = Column(Integer, primary_key = True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"),nullable=False)
+    inbox_id = Column(Integer, ForeignKey("inboxes.inbox_id"),nullable=False)
+    
+    # Relacje
+    user = relationship("User", back_populates="selected_inboxes")
+    inbox = relationship("Inbox", back_populates="user_selections")
