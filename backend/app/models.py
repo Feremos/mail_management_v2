@@ -49,3 +49,12 @@ class UserSelectedInboxes(Base):
     # Relacje
     user = relationship("User", back_populates="selected_inboxes")
     inbox = relationship("Inbox", back_populates="user_selections")
+    
+    
+
+class RevokedToken(Base):
+    __tablename__ = "revoked_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String, unique=True, index=True)
+    expires_at = Column(DateTime, index=True)

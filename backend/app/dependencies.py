@@ -1,8 +1,10 @@
 # dependencies.py - wersja z debugowaniem
 from app.database import SessionLocal
 from app.auth import verify_token
-from app.models import User
+from app.models import User, RevokedToken
 
+from starlette.responses import RedirectResponse
+from urllib.parse import urlencode
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
@@ -14,35 +16,20 @@ def get_db():
         db.close()
 
 def get_current_user(request: Request, db: Session = Depends(get_db)):
-    print("=" * 50)
-    print("DEBUG get_current_user called")
-    print("Request URL:", request.url)
-    print("Request headers:", dict(request.headers))
-    print("All cookies:", dict(request.cookies))
-    
     token = request.cookies.get("access_token")
-    print("Token from cookie:", repr(token))
-    
     if not token:
-        print("ERROR: No token found in cookies")
-        raise HTTPException(status_code=401, detail="Not authenticated - no token")
+        return RedirectResponse(url="/users/login", status_code=303)
 
-    print("Calling verify_token...")
+    revoked = db.query(RevokedToken).filter(RevokedToken.token == token).first()
+    if revoked:
+        return RedirectResponse(url="/users/login", status_code=303)
+
     username = verify_token(token)
-    print("Username from token:", repr(username))
-    
     if not username:
-        print("ERROR: Token verification failed")
-        raise HTTPException(status_code=401, detail="Invalid token")
+        return RedirectResponse(url="/users/login", status_code=303)
 
-    print("Querying database for user...")
     user = db.query(User).filter(User.username == username).first()
-    print("User from database:", user)
-    
     if not user:
-        print("ERROR: User not found in database")
-        raise HTTPException(status_code=401, detail="User not found")
+        return RedirectResponse(url="/users/login", status_code=303)
 
-    print("SUCCESS: User authenticated")
-    print("=" * 50)
     return user

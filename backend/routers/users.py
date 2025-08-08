@@ -1,9 +1,9 @@
 # users.py
-from app.security import create_access_token, verify_password
+from app.security import create_access_token, verify_password, get_token_exp
 from app.dependencies import get_current_user, get_db  # Importuj z dependencies
 from app.schemas import UserCreate, UserResponse, UserLogin, Token
 from app.models import User
-from app.crud import crud_create_user
+from app.crud import crud_create_user, crud_add_revoked_token
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, Response
 from fastapi.responses import RedirectResponse
@@ -60,7 +60,8 @@ def login_user(
         })
 
     # Tworzymy token
-    access_token = create_access_token(username=db_user.username)
+    
+    access_token = create_access_token(username=str(db_user.username))
     print(f"Generated token: {access_token}")
 
     # Tworzymy response z przekierowaniem
@@ -89,14 +90,25 @@ def read_user_me(current_user: User = Depends(get_current_user)): # get current 
     return current_user
 
 @router.get("/dashboard")
-def dashboard(request: Request, current_user: User = Depends(get_current_user)):
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
-        "current_user": current_user
-    })
+async def dashboard(request: Request, current_user: User = Depends(get_current_user)):
+    # Jeśli get_current_user zwróci redirect (u niezalogowanego), zwróć go od razu
+    if isinstance(current_user, RedirectResponse):
+        return current_user
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request, "current_user": current_user}
+    )
 
 # Endpoint do wylogowania
 @router.post("/logout")
-def logout(response: Response):
+async def logout(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if token:
+        exp = get_token_exp(token)
+        if exp:
+            crud_add_revoked_token(db, token, exp)
+
+    response = RedirectResponse(url="/users/login", status_code=303)
     response.delete_cookie("access_token", path="/")
-    return RedirectResponse(url="/users/login", status_code=303)
+    return response

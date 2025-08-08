@@ -5,6 +5,8 @@
     <h2>Witaj, {{ current_user.username }}! 🎉</h2>
     <p>To jest Twoje centrum zarządzania skrzynkami e-mail.</p>
 
-    <a href="/users/logout" class="btn btn-outline-danger">Wyloguj się</a>
+    <form action="/users/logout" method="POST" class="d-inline">
+        <button type="submit" class="btn btn-outline-danger">Wyloguj się</button>
+    </form>
 </div>
 {% endblock %}

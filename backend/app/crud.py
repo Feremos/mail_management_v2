@@ -1,9 +1,10 @@
 from app.schemas import UserCreate,SelectInboxRequest
-from app.models import User, Inbox, UserSelectedInboxes, Email
+from app.models import User, Inbox, UserSelectedInboxes, Email, RevokedToken
 from app.dependencies import Session, get_db
 from app.security import get_password_hash, get_current_user_api
 
 from fastapi import Depends, HTTPException
+from sqlalchemy import desc
 
 
 def crud_create_user(db: Session, user: UserCreate):
@@ -57,5 +58,16 @@ def crud_get_emails_for_user(db: Session, user_id: int):
         
     
     return (
-        db.query(Email).filter(Email.inbox_id.in_(selected_inbox_ids)).orderby(Email.date_received.desc()).all
+        db.query(Email).filter(Email.inbox_id.in_(selected_inbox_ids)).order_by(Email.date_received.desc()).all()
     )
+
+
+def crud_add_revoked_token(db: Session, token: str, expires_at):
+    """
+    Dodaje token do listy zablokowanych (revoked_tokens).
+    """
+    revoked = RevokedToken(token=token, expires_at=expires_at)
+    db.add(revoked)
+    db.commit()
+    db.refresh(revoked)
+    return revoked

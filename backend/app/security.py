@@ -11,6 +11,7 @@ from jose import jwt
 from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 from app.config import SECRET_KEY, ALGORITHM
+from datetime import datetime, timezone
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -33,19 +34,16 @@ def create_access_token(username: str, expires_delta: timedelta = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    print("SECRET_KEY in create_access_token:", SECRET_KEY)
-    print("SECRET_KEY:", repr(SECRET_KEY))
+    
 
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    print("SECRET_KEY (create):", repr(SECRET_KEY))
-    print("Generated token:", repr(token))
     return token
 
 # OAuth2 scheme dla API endpoints (jeśli potrzebne)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
 # Dependency for API endpoints using Authorization header
-def get_current_user_api(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+def get_current_user_api(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)): # its in crud
     username = verify_token(token)
     if username is None:
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -55,3 +53,17 @@ def get_current_user_api(token: Annotated[str, Depends(oauth2_scheme)], db: Sess
         raise HTTPException(status_code=401, detail="User not found")
     
     return user
+
+def get_token_exp(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        exp_timestamp = payload.get("exp")
+        if exp_timestamp is None:
+            return None
+        return datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
+    except jwt.ExpiredSignatureError:
+        # Token już wygasł
+        return datetime.now(tz=timezone.utc)
+    except jwt.PyJWTError:
+        # Niepoprawny token
+        return None
