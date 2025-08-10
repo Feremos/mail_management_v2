@@ -1,10 +1,16 @@
+<style>
+a.selected {
+  background-color: #bfdbfe; /* jasnoniebieskie tło */
+}
+</style>
 {% extends "base.html" %}
 
 {% block content %}
+
 <div class="flex flex-grow h-full">
 
     <!-- LEWA KOLUMNA -->
-    <aside class="w-1/5 border-r border-blue-200 p-6 flex flex-col bg-blue-50 h-full">
+    <aside style="width: 25%;" class="border-r border-blue-200 p-6 flex flex-col bg-blue-50 h-full">
         <div id="inboxes-column"
              hx-get="/inboxes/selected?mode=html"
              hx-trigger="load"
@@ -32,14 +38,18 @@
     </aside>
 
     <!-- ŚRODEK -->
-    <section class="w-2/5 border-r border-blue-200 p-6 overflow-auto">
-        <div id="emails-column" class="text-blue-900 font-normal">
-            <p class="text-blue-300 italic">Wybierz skrzynkę lub kategorię z lewej strony</p>
+    <section style="width: 30%;" class="border-r border-blue-200 p-6 overflow-auto">
+        <div id="emails-column"
+            hx-get="/emails?mode=html"
+            hx-trigger="load"
+            hx-swap="innerHTML"
+            class="text-blue-900 font-normal">
+        <p class="text-blue-300 italic">Wybierz skrzynkę lub kategorię z lewej strony</p>
         </div>
     </section>
 
     <!-- PRAWA -->
-    <section class="flex-1 p-6 overflow-auto">
+    <section style="width: 65%;" class="flex-1 p-6 overflow-auto">
         <div id="email-detail" class="text-blue-900 font-normal">
             <p class="text-blue-300 italic">Wybierz wiadomość z listy</p>
         </div>
@@ -111,6 +121,36 @@ function updateButtonUrls() {
         btn.setAttribute('hx-get', url);
     });
 }
+
+document.body.addEventListener('htmx:afterSwap', (event) => {
+  if(event.target.id === 'emails-column'){
+    // znajdź pierwszy link maila
+    const firstEmailLink = document.querySelector('#emails-column ul li a');
+    if(firstEmailLink){
+      // usuń klasę selected z innych
+      document.querySelectorAll('#emails-column ul li a').forEach(a => a.classList.remove('selected'));
+      // dodaj selected do pierwszego
+      firstEmailLink.classList.add('selected');
+      // kliknij, żeby załadować szczegóły
+      const url = firstEmailLink.getAttribute('hx-get');
+      htmx.ajax('GET', url, {target: '#email-detail', swap: 'innerHTML'});
+
+    }
+  }
+});
+
+
+// Dodatkowo: po kliknięciu na maila, podświetl go
+
+document.querySelector('#emails-column').addEventListener('click', e => {
+  const a = e.target.closest('a');
+  if(!a) return;
+  // usuwaj selected z innych
+  document.querySelectorAll('#emails-column ul li a').forEach(link => link.classList.remove('selected'));
+  a.classList.add('selected');
+});
+
+
 </script>
 
 {% endblock %}

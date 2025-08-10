@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_current_user
 from app.models import Category, UserSelectedCategories
 from app.schemas import CategoryCreate
-from app.crud import crud_add_or_get_category, crud_add_user_category, crud_get_user_categories
+from app.crud import crud_add_or_get_category, crud_add_user_category, crud_get_user_categories, crud_get_user_selected_categories, crud_remove_user_category
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
@@ -25,12 +25,8 @@ def get_user_categories(
     current_user = Depends(get_current_user),
     mode: str = "json"
 ):
-    categories = (
-        db.query(Category)
-        .join(UserSelectedCategories, UserSelectedCategories.category_id == Category.id)
-        .filter(UserSelectedCategories.user_id == current_user.user_id)
-        .all()
-    )
+    categories = crud_get_user_selected_categories(db, current_user.user_id)
+
 
     if mode == "html":
         return templates.TemplateResponse(
@@ -66,15 +62,6 @@ def remove_user_category(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    user_cat = db.query(UserSelectedCategories).filter(
-        UserSelectedCategories.user_id == current_user.user_id,
-        UserSelectedCategories.category_id == category_id
-    ).first()
-
-    if not user_cat:
-        raise HTTPException(status_code=404, detail="Kategoria nie przypisana do użytkownika")
-
-    db.delete(user_cat)
-    db.commit()
+    crud_remove_user_category(db, current_user.user_id, category_id)
 
     return {"msg": "Kategoria usunięta"}

@@ -1,37 +1,38 @@
 <div class="mb-4">
   <h3 class="font-semibold text-blue-700 mb-3">Kategorie</h3>
-  <div class="space-y-2 mb-4">
+  <div class="flex flex-wrap gap-2 mb-4">
     <!-- Opcja "Wszystkie kategorie" -->
     <button 
-      class="w-full text-left bg-blue-100 hover:bg-blue-200 border border-blue-300 hover:border-blue-400 rounded-lg px-4 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
+      data-category-id="null"
+      class="category-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
       hx-get="/emails?mode=html"
       hx-target="#emails-column"
       hx-swap="innerHTML">
-      <div class="font-semibold text-blue-900">📂 Wszystkie maile</div>
+      <div class="font-semibold text-blue-900 whitespace-nowrap">Wszystkie maile</div>
     </button>
+
     {% for category in categories %}
       <div class="relative group">
         <button 
-          class="w-full text-left bg-white hover:bg-blue-50 border border-blue-200 hover:border-blue-300 rounded-lg px-4 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
+          data-category-id="{{ category.name }}"
+          class="category-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
           hx-get="/emails?category={{ category.name }}&mode=html"
           hx-target="#emails-column"
           hx-swap="innerHTML"
-          data-category-btn
-          data-category="{{ category.name }}"
           onclick="setCurrentCategory('{{ category.name }}')">
-          <div class="font-medium text-blue-800">{{ category.name }}</div>
+          <div class="font-medium text-blue-800 whitespace-nowrap">{{ category.name }}</div>
         </button>
         <button 
           hx-delete="/categories/{{ category.id }}" 
           hx-confirm="Na pewno chcesz usunąć kategorię '{{ category.name }}'?"
           hx-target="closest .group"
           hx-swap="outerHTML"
-          class="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+          class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
           ✖
         </button>
       </div>
     {% else %}
-      <div class="text-center py-4">
+      <div class="text-center py-4 w-full">
         <p class="text-blue-400 text-sm">Brak kategorii</p>
       </div>
     {% endfor %}
@@ -57,3 +58,41 @@
     </button>
   </form>
 </div>
+
+<script>
+let selectedCategory = null;
+
+function highlightSelectedCategory() {
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.remove('bg-blue-300', 'border-blue-500');
+    btn.classList.add('bg-blue-100', 'border-blue-300');
+  });
+
+  const idToSelect = selectedCategory === null ? 'null' : selectedCategory;
+
+  const btn = document.querySelector(`[data-category-id="${idToSelect}"]`);
+  if (btn) {
+    btn.classList.remove('bg-blue-100', 'border-blue-300');
+    btn.classList.add('bg-blue-300', 'border-blue-500');
+  }
+}
+
+
+// Kliknięcie przycisku -> zapamiętaj i podświetl
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.category-btn');
+  if (btn) {
+    selectedCategory = btn.getAttribute('data-category-id');
+    highlightSelectedCategory();
+  }
+});
+
+// Po podmianie przez HTMX -> odtwórz podświetlenie
+document.body.addEventListener('htmx:afterSwap', highlightSelectedCategory);
+
+// Domyślnie podświetl "Wszystkie maile" na start
+document.addEventListener('DOMContentLoaded', () => {
+  selectedCategory = "null";
+  highlightSelectedCategory();
+});
+</script>

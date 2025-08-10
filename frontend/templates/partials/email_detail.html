@@ -3,9 +3,12 @@
     <p class="text-sm text-gray-500 mb-4">
         Od: {{ email.sent_from }}<br>
         Do: {{ email.sent_to }}<br>
-        Odebrano: {{ email.date_received.strftime('%Y-%m-%d %H:%M') }}
+        Odebrano: {{ email.date_received.strftime('%Y-%m-%d %H:%M') }}<br>
+        Kategoria: {{email.classification}}
+        
     </p>
     <div class="mb-4">
+        Treść:<br>
         {{ email.body | safe }}
     </div>
 

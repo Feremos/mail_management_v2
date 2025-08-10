@@ -129,3 +129,52 @@ def crud_get_user_categories(db: Session, user_id: int):
         .order_by(Category.name)
         .all()
     )
+    
+def crud_get_user_selected_categories(db, user_id):
+    return (
+        db.query(Category)
+        .join(UserSelectedCategories, UserSelectedCategories.category_id == Category.id)
+        .filter(UserSelectedCategories.user_id == user_id)
+        .all()
+    )
+
+def crud_remove_user_category(db, user_id, category_id):
+    user_cat = db.query(UserSelectedCategories).filter(
+        UserSelectedCategories.user_id == user_id,
+        UserSelectedCategories.category_id == category_id
+    ).first()
+
+    if not user_cat:
+        raise HTTPException(status_code=404, detail="Kategoria nie przypisana do użytkownika")
+
+    db.delete(user_cat)
+    db.commit()
+    
+def crud_add_user_inbox(db, user_id, login):
+    inbox = db.query(Inbox).filter(Inbox.login == login).first()
+    if not inbox:
+        raise HTTPException(status_code=404, detail="Inbox o podanym loginie nie istnieje")
+
+    existing_selection = db.query(UserSelectedInboxes).filter(
+        UserSelectedInboxes.user_id == user_id,
+        UserSelectedInboxes.inbox_id == inbox.inbox_id
+    ).first()
+
+    if existing_selection:
+        raise HTTPException(status_code=400, detail="Już masz tę skrzynkę wybraną")
+
+    selected_inbox = UserSelectedInboxes(user_id=user_id, inbox_id=inbox.inbox_id)
+    db.add(selected_inbox)
+    db.commit()
+    db.refresh(selected_inbox)
+
+    return inbox
+
+
+def crud_get_user_inboxes(db, user_id):
+    return (
+        db.query(Inbox)
+        .join(UserSelectedInboxes, Inbox.inbox_id == UserSelectedInboxes.inbox_id)
+        .filter(UserSelectedInboxes.user_id == user_id)
+        .all()
+    )

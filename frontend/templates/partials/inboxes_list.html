@@ -1,38 +1,42 @@
 <div class="mb-6">
   <h2 class="font-semibold text-blue-700 mb-3">Twoje skrzynki</h2>
-  <div class="space-y-2">
+  <div class="flex flex-wrap gap-2 mb-4">
     <!-- Opcja "Wszystkie skrzynki" -->
     <button 
-      class="w-full text-left bg-blue-100 hover:bg-blue-200 border border-blue-300 hover:border-blue-400 rounded-lg px-4 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
-      hx-get="/emails?mode=html"
-      hx-target="#emails-column"
-      hx-swap="innerHTML"
-      hx-include="#current-category">
-      <div class="font-semibold text-blue-900">📧 Wszystkie skrzynki</div>
+        data-inbox-id="null"
+        class="inbox-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
+        hx-get="/emails?mode=html"
+        hx-target="#emails-column"
+        hx-swap="innerHTML"
+        onclick="setCurrentInbox(null)">
+        <div class="font-semibold text-blue-900 whitespace-nowrap">Wszystkie skrzynki</div>
     </button>
+
     
     {% for inbox in inboxes %}
-      <button 
-        class="w-full text-left bg-white hover:bg-blue-50 border border-blue-200 hover:border-blue-300 rounded-lg px-4 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
+    <button 
+        data-inbox-id="{{ inbox.inbox_id }}"
+        class="inbox-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
         hx-get="/emails?inbox_id={{ inbox.inbox_id }}&mode=html"
         hx-target="#emails-column"
         hx-swap="innerHTML"
-        hx-include="#current-category">
-        <div class="font-medium text-blue-800">{{ inbox.login }}</div>
-      </button>
+        onclick="setCurrentInbox('{{ inbox.inbox_id }}')">
+        <div class="font-medium text-blue-800 whitespace-nowrap">{{ inbox.login }}</div>
+    </button>
     {% else %}
-      <div class="text-center py-4">
+      <div class="text-center py-4 w-full">
         <p class="text-blue-400 text-sm">Brak skrzynek</p>
       </div>
     {% endfor %}
   </div>
 
+  <!-- FORMULARZ DODAWANIA SKRZYNEK -->
   <form
     hx-post="/inboxes/select"
     hx-target="#inboxes-column"
     hx-swap="innerHTML"
     hx-on::after-request="if(event.detail.successful) this.reset()"
-    class="space-y-2 mt-4">
+    class="space-y-2">
     <input
       type="text"
       name="login"
@@ -55,3 +59,41 @@
     </button>
   </form>
 </div>
+
+<script>
+let selectedInbox = null;
+
+function highlightSelected() {
+  document.querySelectorAll('.inbox-btn').forEach(btn => {
+    btn.classList.remove('bg-blue-300', 'border-blue-500'); 
+    btn.classList.add('bg-blue-100', 'border-blue-300');    
+  });
+
+  const idToSelect = selectedInbox === null ? 'null' : selectedInbox;
+
+  const btn = document.querySelector(`[data-inbox-id="${idToSelect}"]`);
+  if (btn) {
+    btn.classList.remove('bg-blue-100', 'border-blue-300');
+    btn.classList.add('bg-blue-300', 'border-blue-500');
+  }
+}
+
+// Kliknięcie przycisku -> zapamiętaj i podświetl
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.inbox-btn');
+  if (btn) {
+    selectedInbox = btn.getAttribute('data-inbox-id');
+    highlightSelected();
+  }
+});
+
+// Po podmianie przez HTMX -> odtwórz podświetlenie
+document.body.addEventListener('htmx:afterSwap', highlightSelected);
+
+// Domyślnie podświetl "Wszystkie skrzynki" na start
+document.addEventListener('DOMContentLoaded', () => {
+  selectedInbox = "null";
+  highlightSelected();
+});
+
+</script>

@@ -1,7 +1,7 @@
 from app.schemas import UserResponse, SelectInboxRequest, InboxSelectionResponse
 from app.models import User, Inbox, UserSelectedInboxes
 from app.dependencies import get_db, get_current_user
-
+from app.crud import crud_add_user_inbox, crud_get_user_inboxes
 from fastapi import APIRouter, Depends, HTTPException, Form, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -19,60 +19,31 @@ router = APIRouter(
     tags=['inboxes']
 )
 
-
+#tutaj jest cos zle zrobione trzeba poprawic
 @router.post("/select")
 def select_inbox(
-    request: Request,  # DODAJ TO
+    request: Request,
     login: str = Form(...),
-    password: str = Form(...),
+    password: str = Form(...),  # aktualnie nieużywane, trzeba dodac weryfikacje potem
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    mode: str = "json"  # DODAJ TO
+    mode: str = "json"
 ):
-    # Sprawdź, czy inbox istnieje
-    inbox = db.query(Inbox).filter(Inbox.login == login).first()
-    if not inbox:
-        # Jeśli nie ma inboxa, zwróć błąd
-        raise HTTPException(status_code=404, detail="Inbox o podanym loginie nie istnieje")
-    
-    # (opcjonalnie) Tu możesz dodać weryfikację hasła — np. spróbować się połączyć, jeśli chcesz
-    
-    # Sprawdź, czy użytkownik już wybrał ten inbox
-    existing_selection = db.query(UserSelectedInboxes).filter(
-        UserSelectedInboxes.user_id == current_user.user_id,
-        UserSelectedInboxes.inbox_id == inbox.inbox_id
-    ).first()
-    
-    if existing_selection:
-        raise HTTPException(status_code=400, detail="Już masz tę skrzynkę wybraną")
-    
-    # Dodaj inbox do usera
-    selected_inbox = UserSelectedInboxes(user_id=current_user.user_id, inbox_id=inbox.inbox_id)
-    db.add(selected_inbox)
-    db.commit()
-    db.refresh(selected_inbox)
-    
-    # NOWA CZĘŚĆ - zwróć HTML po dodaniu
+    inbox = crud_add_user_inbox(db, current_user.user_id, login)
+
     if mode == "html":
-        # Pobierz wszystkie skrzynki użytkownika i zwróć #to do crud
-        inboxes = (
-            db.query(Inbox)
-            .join(UserSelectedInboxes, Inbox.inbox_id == UserSelectedInboxes.inbox_id)
-            .filter(UserSelectedInboxes.user_id == current_user.user_id)
-            .all()
-        )
-        
+        inboxes = crud_get_user_inboxes(db, current_user.user_id)
         return templates.TemplateResponse(
             "partials/inboxes_list.html",
             {"request": request, "inboxes": inboxes}
         )
     
-    # Domyślna odpowiedź JSON
     return InboxSelectionResponse(
         inbox_id=inbox.inbox_id,
         name=inbox.login,
         login=inbox.login
     )
+
 
 #Get user selected inboxes
 @router.get("/selected")
