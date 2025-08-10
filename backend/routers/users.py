@@ -96,8 +96,7 @@ async def dashboard(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if current_user is not None:
-        emails = crud_get_emails_for_user(db, user_id=current_user.user_id)
+    emails = crud_get_emails_for_user(db, user_id=current_user.user_id)
 
     return templates.TemplateResponse(
         "dashboard.html",

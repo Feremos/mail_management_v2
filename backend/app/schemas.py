@@ -17,8 +17,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username:str
     
-
-    
 class InboxCreate(BaseModel):
     login: str
     password: str  # plain text, potem zaszyfrujemy
