@@ -1,0 +1,27 @@
+<div>
+    <h2 class="text-xl font-bold mb-2">{{ email.subject }}</h2>
+    <p class="text-sm text-gray-500 mb-4">
+        Od: {{ email.sent_from }}<br>
+        Do: {{ email.sent_to }}<br>
+        Odebrano: {{ email.date_received.strftime('%Y-%m-%d %H:%M') }}
+    </p>
+    <div class="mb-4">
+        {{ email.body | safe }}
+    </div>
+
+    {% if email.suggested_reply %}
+    <div class="p-2 bg-gray-100 border mb-4">
+        <strong>Proponowana odpowiedź:</strong><br>
+        {{ email.suggested_reply }}
+    </div>
+    {% endif %}
+
+    <form hx-post="/emails/{{ email.email_id }}/reply"
+          hx-target="#email-detail"
+          hx-swap="innerHTML">
+        <div class="mb-2">
+            <textarea name="response_text" rows="5" class="w-full border p-2 rounded">{{ email.response_text or "" }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Wyślij odpowiedź</button>
+    </form>
+</div>

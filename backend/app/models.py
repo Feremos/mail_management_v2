@@ -11,6 +11,8 @@ class User(Base):
     password_hashed = Column(String)
     
     selected_inboxes = relationship("UserSelectedInboxes", back_populates="user", cascade="all, delete-orphan")
+    selected_categories = relationship("UserSelectedCategories", back_populates="user", cascade="all, delete-orphan")
+    
 
 class Inbox(Base):
     __tablename__ = "inboxes"
@@ -24,6 +26,7 @@ class Inbox(Base):
     imap_port = Column(Integer)
     
     user_selections = relationship("UserSelectedInboxes", back_populates="inbox", cascade="all, delete-orphan")
+    
 
 class Email(Base):
     __tablename__ = "emails"
@@ -33,6 +36,7 @@ class Email(Base):
     sent_from = Column(String)
     sent_to = Column(Text)
     subject = Column(String)
+    classification = Column(String)
     body = Column(Text)
     suggested_reply = Column(Text)
     response_text = Column(Text, nullable=True)
@@ -40,6 +44,9 @@ class Email(Base):
     responded = Column(Boolean, default=False)
     archived = Column(Boolean, default=False)
     
+    inbox = relationship("Inbox", backref="emails")
+
+
 class UserSelectedInboxes(Base):
     __tablename__ = "user_selected_inboxes"
     user_id = Column(Integer, ForeignKey("users.user_id"), primary_key=True)
@@ -49,12 +56,26 @@ class UserSelectedInboxes(Base):
     inbox = relationship("Inbox", back_populates="user_selections")
 
 
-    
-    
-
 class RevokedToken(Base):
     __tablename__ = "revoked_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
     token = Column(String, unique=True, index=True)
     expires_at = Column(DateTime, index=True)
+    
+
+class Category(Base):
+    __tablename__ = "categories"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, index=True)
+    
+    user_associations = relationship("UserSelectedCategories", back_populates="category", cascade="all, delete-orphan")
+
+
+class UserSelectedCategories(Base):
+    __tablename__ = "user_selected_categories"
+    user_id = Column(Integer, ForeignKey("users.user_id"), primary_key=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), primary_key=True)
+
+    user = relationship("User", back_populates="selected_categories")
+    category = relationship("Category", back_populates="user_associations")

@@ -1,7 +1,7 @@
 from fastapi import FastAPI 
 from fastapi.responses import RedirectResponse
 from app.database import engine, Base
-from routers import users,inboxes,emails, admin
+from routers import users,inboxes,emails, admin, categories
 
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -38,6 +38,7 @@ app.include_router(users.router)
 app.include_router(inboxes.router)
 app.include_router(emails.router)
 app.include_router(admin.router)
+app.include_router(categories.router)
 
 @app.get("/")
 def root():

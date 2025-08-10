@@ -72,3 +72,6 @@ class InboxSelectionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class CategoryCreate(BaseModel):
+    name: str

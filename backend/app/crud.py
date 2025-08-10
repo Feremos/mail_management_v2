@@ -1,5 +1,5 @@
 from app.schemas import UserCreate,SelectInboxRequest
-from app.models import User, Inbox, UserSelectedInboxes, Email, RevokedToken
+from app.models import User, Inbox, UserSelectedInboxes, Email, RevokedToken, UserSelectedCategories, Category
 from app.dependencies import Session, get_db
 from app.security import get_password_hash, get_current_user_api
 
@@ -23,6 +23,7 @@ def crud_create_user(db: Session, user: UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
 def crud_select_inbox_for_user(
     request: SelectInboxRequest,
     current_user = Depends(get_current_user_api),
@@ -45,21 +46,50 @@ def crud_select_inbox_for_user(
 
     return True
 
-def crud_get_emails_for_user(db: Session, user_id: int):
-    selected_inbox_ids=[
+def crud_get_emails_for_user(
+    db: Session,
+    user_id: int,
+    inbox_id: int | None = None,
+    category: str | None = None
+):
+    """
+    Zwraca listę emaili użytkownika z opcjonalnym filtrowaniem po skrzynce i kategorii.
+    """
+    # Skrzynki wybrane przez użytkownika
+    selected_inbox_ids = [
         selection.inbox_id
         for selection in db.query(UserSelectedInboxes).filter(
             UserSelectedInboxes.user_id == user_id
         ).all()
     ]
-    
+
     if not selected_inbox_ids:
         return []
-        
-    
-    return (
-        db.query(Email).filter(Email.inbox_id.in_(selected_inbox_ids)).order_by(Email.date_received.desc()).all()
+
+    # Podstawowy query
+    query = db.query(Email).filter(Email.inbox_id.in_(selected_inbox_ids))
+
+    # Filtr po inbox_id (tylko jeśli ten inbox należy do użytkownika)
+    if inbox_id and inbox_id in selected_inbox_ids:
+        query = query.filter(Email.inbox_id == inbox_id)
+
+    # Filtr po kategorii
+    if category:
+        query = query.filter(Email.classification == category)
+
+    return query.order_by(Email.date_received.desc()).all()
+
+def crud_get_email_detail(db: Session, user_id: int, email_id: int):
+    email = (
+        db.query(Email)
+        .join(UserSelectedInboxes, Email.inbox_id == UserSelectedInboxes.inbox_id)
+        .filter(UserSelectedInboxes.user_id == user_id, Email.email_id == email_id)
+        .first()
     )
+    if not email:
+        raise HTTPException(status_code=404, detail="Email not found or not accessible")
+    return email
+
 
 
 def crud_add_revoked_token(db: Session, token: str, expires_at):
@@ -71,3 +101,31 @@ def crud_add_revoked_token(db: Session, token: str, expires_at):
     db.commit()
     db.refresh(revoked)
     return revoked
+
+def crud_add_or_get_category(db: Session, name: str):
+    category = db.query(Category).filter(Category.name == name).first()
+    if not category:
+        category = Category(name=name)
+        db.add(category)
+        db.commit()
+        db.refresh(category)
+    return category
+
+def crud_add_user_category(db: Session, user_id: int, category_id: int):
+    exists = db.query(UserSelectedCategories).filter(
+        UserSelectedCategories.user_id == user_id,
+        UserSelectedCategories.category_id == category_id,
+    ).first()
+    if not exists:
+        user_cat = UserSelectedCategories(user_id=user_id, category_id=category_id)
+        db.add(user_cat)
+        db.commit()
+
+def crud_get_user_categories(db: Session, user_id: int):
+    return (
+        db.query(Category)
+        .join(UserSelectedCategories, Category.id == UserSelectedCategories.category_id)
+        .filter(UserSelectedCategories.user_id == user_id)
+        .order_by(Category.name)
+        .all()
+    )

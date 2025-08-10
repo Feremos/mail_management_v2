@@ -1,37 +1,116 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="p-4">
-    <h2>Witaj, {{ current_user.username }}! 🎉</h2>
-    <p>To jest Twoje centrum zarządzania skrzynkami e-mail.</p>
+<div class="flex flex-grow h-full">
 
-    <form action="/users/logout" method="POST" class="d-inline">
-        <button type="submit" class="btn btn-outline-danger">Wyloguj się</button>
-    </form>
-
-    <hr>
-    <h3>Dodaj nową skrzynkę (login i hasło):</h3>
-    <form action="/inboxes/select" method="POST">
-        <div class="mb-3">
-            <label for="login" class="form-label">Login (adres e-mail)</label>
-            <input type="email" class="form-control" id="login" name="login" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Hasło</label>
-            <input type="password" class="form-control" id="password" name="password" required>
+    <!-- LEWA KOLUMNA -->
+    <aside class="w-1/5 border-r border-blue-200 p-6 flex flex-col bg-blue-50 h-full">
+        <div id="inboxes-column"
+             hx-get="/inboxes/selected?mode=html"
+             hx-trigger="load"
+             hx-target="#inboxes-column"
+             class="overflow-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100 text-blue-800 font-medium mb-6">
+            Ładowanie skrzynek...
         </div>
 
-        <button type="submit" class="btn btn-primary">Dodaj skrzynkę</button>
-    </form>
-    <h3>Twoje e-maile:</h3>
-    {% if emails %}
-        <ul>
-            {% for email in emails %}
-                <li>{{ email.subject }} - {{ email.sent_from }} - {{ email.date_received.strftime('%Y-%m-%d %H:%M') }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Brak wiadomości e-mail.</p>
-    {% endif %}
+        <div id="categories-column"
+             hx-get="/categories?mode=html"
+             hx-trigger="load"
+             hx-target="#categories-column"
+             class="overflow-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100 text-blue-800 font-medium mb-6">
+            Ładowanie kategorii...
+        </div>
+
+        <hr class="my-6 border-blue-200" />
+
+        <form action="/users/logout" method="POST" class="mt-auto">
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                Wyloguj
+            </button>
+        </form>
+    </aside>
+
+    <!-- ŚRODEK -->
+    <section class="w-2/5 border-r border-blue-200 p-6 overflow-auto">
+        <div id="emails-column" class="text-blue-900 font-normal">
+            <p class="text-blue-300 italic">Wybierz skrzynkę lub kategorię z lewej strony</p>
+        </div>
+    </section>
+
+    <!-- PRAWA -->
+    <section class="flex-1 p-6 overflow-auto">
+        <div id="email-detail" class="text-blue-900 font-normal">
+            <p class="text-blue-300 italic">Wybierz wiadomość z listy</p>
+        </div>
+    </section>
+
 </div>
+
+<script>
+// Śledzenie aktualnych filtrów
+let currentInbox = null;
+let currentCategory = null;
+
+function setCurrentInbox(inboxId) {
+    currentInbox = inboxId;
+    updateFilters();
+}
+
+function setCurrentCategory(category) {
+    currentCategory = category;
+    updateFilters();
+}
+
+function updateFilters() {
+    // Buduj URL z aktualnych filtrów
+    let url = '/emails?mode=html';
+    
+    if (currentInbox) {
+        url += '&inbox_id=' + currentInbox;
+    }
+    
+    if (currentCategory) {
+        url += '&category=' + encodeURIComponent(currentCategory);
+    }
+    
+    // Aktualizuj wszystkie przyciski żeby używały kombinacji filtrów
+    updateButtonUrls();
+}
+
+function updateButtonUrls() {
+    // Aktualizuj przyciski kategorii żeby zachowały inbox
+    document.querySelectorAll('[data-category-btn]').forEach(btn => {
+        const category = btn.getAttribute('data-category');
+        let url = '/emails?mode=html';
+        
+        if (currentInbox) {
+            url += '&inbox_id=' + currentInbox;
+        }
+        
+        if (category && category !== 'null') {
+            url += '&category=' + encodeURIComponent(category);
+        }
+        
+        btn.setAttribute('hx-get', url);
+    });
+    
+    // Aktualizuj przyciski inboxów żeby zachowały kategorię
+    document.querySelectorAll('[data-inbox-btn]').forEach(btn => {
+        const inboxId = btn.getAttribute('data-inbox');
+        let url = '/emails?mode=html';
+        
+        if (inboxId && inboxId !== 'null') {
+            url += '&inbox_id=' + inboxId;
+        }
+        
+        if (currentCategory) {
+            url += '&category=' + encodeURIComponent(currentCategory);
+        }
+        
+        btn.setAttribute('hx-get', url);
+    });
+}
+</script>
+
 {% endblock %}
