@@ -2,10 +2,10 @@ from app.schemas import UserResponse, SelectInboxRequest, InboxSelectionResponse
 from app.models import User, Inbox, UserSelectedInboxes
 from app.dependencies import get_db, get_current_user
 from app.crud import crud_add_user_inbox, crud_get_user_inboxes
-from fastapi import APIRouter, Depends, HTTPException, Form, Request
+
+from fastapi import APIRouter, Depends, HTTPException, Form, Request, HTML
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-
 from pathlib import Path
 
 # Ścieżki: idź do katalogu nadrzędnego projektu

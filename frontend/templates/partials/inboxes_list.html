@@ -1,6 +1,6 @@
 <div class="mb-6">
   <h2 class="font-semibold text-blue-700 mb-3">Twoje skrzynki</h2>
-  <div class="flex flex-wrap gap-2 mb-4">
+  <div class="flex flex-wrap gap-2 mb-4" id="inboxes-column">
     <!-- Opcja "Wszystkie skrzynki" -->
     <button 
         data-inbox-id="null"
@@ -12,21 +12,27 @@
         <div class="font-semibold text-blue-900 whitespace-nowrap">Wszystkie skrzynki</div>
     </button>
 
-    
     {% for inbox in inboxes %}
-    <button 
-        data-inbox-id="{{ inbox.inbox_id }}"
-        class="inbox-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
-        hx-get="/emails?inbox_id={{ inbox.inbox_id }}&mode=html"
-        hx-target="#emails-column"
-        hx-swap="innerHTML"
-        onclick="setCurrentInbox('{{ inbox.inbox_id }}')">
-        <div class="font-medium text-blue-800 whitespace-nowrap">{{ inbox.login }}</div>
-    </button>
-    {% else %}
-      <div class="text-center py-4 w-full">
-        <p class="text-blue-400 text-sm">Brak skrzynek</p>
-      </div>
+    <div class="relative group">
+      <button 
+          data-inbox-id="{{ inbox.inbox_id }}"
+          class="inbox-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
+          hx-get="/emails?inbox_id={{ inbox.inbox_id }}&mode=html"
+          hx-target="#emails-column"
+          hx-swap="innerHTML"
+          onclick="setCurrentInbox('{{ inbox.inbox_id }}')">
+          <div class="font-medium text-blue-800 whitespace-nowrap">{{ inbox.login }}</div>
+      </button>
+      <button
+          hx-delete="/inboxes/{{ inbox.inbox_id }}/unselect"
+          hx-confirm="Na pewno chcesz usunąć skrzynkę '{{ inbox.login }}'?"
+          hx-target="closest .group"
+          hx-swap="innerHTML"
+           class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+          >
+          ✖
+      </button>
+    </div>
     {% endfor %}
   </div>
 
@@ -95,5 +101,4 @@ document.addEventListener('DOMContentLoaded', () => {
   selectedInbox = "null";
   highlightSelected();
 });
-
 </script>
