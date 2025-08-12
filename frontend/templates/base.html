@@ -2,6 +2,7 @@
 <html lang="pl" class="h-full">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Email Dashboard{% endblock %}</title>
     
     <link rel="stylesheet" href="/static/style.css" />
@@ -9,19 +10,42 @@
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-white text-gray-800 font-sans h-full flex flex-col">
+<body class="bg-gray-900 text-gray-100 font-sans antialiased h-full flex flex-col">
 
-    <nav class="bg-blue-600 shadow-md p-4 flex justify-between items-center">
-        <a href="/" class="text-white text-xl font-semibold flex items-center gap-2">
-            📧 Email Dashboard
+    <nav class="bg-gray-800 border-b border-gray-700 shadow-lg p-4 flex justify-between items-center">
+        <a href="/" class="text-white text-xl font-semibold flex items-center gap-2 hover:text-blue-400 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span>Email Dashboard</span>
         </a>
         {% if current_user %}
-            <span class="text-blue-100 font-medium">Zalogowany: {{ current_user.username }}</span>
+            <span class="text-gray-300 font-medium px-3 py-1 rounded-md bg-gray-700 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+                {{ current_user.username }}
+            </span>
         {% endif %}
     </nav>
 
-    <main class="flex-grow flex h-[calc(100vh-64px)]">
+    <main class="flex-grow flex h-[calc(100vh-68px)] bg-gray-900">
         {% block content %}{% endblock %}
     </main>
 
