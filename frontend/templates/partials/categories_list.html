@@ -1,26 +1,32 @@
-<div class="mb-4">
-  <h3 class="font-semibold text-blue-700 mb-3">Kategorie</h3>
-  <div class="flex flex-wrap gap-2 mb-4">
+<div class="mb-6">
+  <h3 class="font-semibold text-blue-400 mb-3 text-lg flex items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+    </svg>
+    Kategorie
+  </h3>
+  
+  <div class="flex flex-wrap gap-2 mb-4" id="categories-column">
     <!-- Opcja "Wszystkie kategorie" -->
     <button 
       data-category-id="null"
-      class="category-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
+      class="category-btn bg-gray-700 border border-gray-600 hover:border-blue-400 rounded-lg px-4 py-2 transition-all duration-200 hover:bg-gray-600"
       hx-get="/emails?mode=html"
       hx-target="#emails-column"
       hx-swap="innerHTML">
-      <div class="font-semibold text-blue-900 whitespace-nowrap">Wszystkie maile</div>
+      <div class="font-semibold text-blue-300 whitespace-nowrap">Wszystkie maile</div>
     </button>
 
     {% for category in categories %}
       <div class="relative group">
         <button 
           data-category-id="{{ category.name }}"
-          class="category-btn bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md"
+          class="category-btn bg-gray-700 border border-gray-600 hover:border-blue-400 rounded-lg px-4 py-2 transition-all duration-200 hover:bg-gray-600"
           hx-get="/emails?category={{ category.name }}&mode=html"
           hx-target="#emails-column"
           hx-swap="innerHTML"
           onclick="setCurrentCategory('{{ category.name }}')">
-          <div class="font-medium text-blue-800 whitespace-nowrap">{{ category.name }}</div>
+          <div class="font-medium text-blue-300 whitespace-nowrap">{{ category.name }}</div>
         </button>
         <button 
           hx-delete="/categories/{{ category.id }}" 
@@ -33,7 +39,7 @@
       </div>
     {% else %}
       <div class="text-center py-4 w-full">
-        <p class="text-blue-400 text-sm">Brak kategorii</p>
+        <p class="text-gray-500 text-sm">Brak kategorii</p>
       </div>
     {% endfor %}
   </div>
@@ -49,11 +55,14 @@
       name="category_name"
       placeholder="Nowa kategoria"
       required
-      class="flex-grow rounded-lg border border-blue-300 focus:border-blue-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-20"
+      class="flex-grow bg-gray-700 text-gray-200 rounded-lg border border-gray-600 focus:border-blue-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 placeholder-gray-400"
     />
     <button
       type="submit"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+      class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+      </svg>
       Dodaj
     </button>
   </form>
@@ -64,19 +73,18 @@ let selectedCategory = null;
 
 function highlightSelectedCategory() {
   document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.classList.remove('bg-blue-300', 'border-blue-500');
-    btn.classList.add('bg-blue-100', 'border-blue-300');
+    btn.classList.remove('bg-blue-500', 'border-blue-400', 'hover:bg-gray-600');
+    btn.classList.add('bg-gray-700', 'border-gray-600', 'hover:bg-gray-600');
   });
 
   const idToSelect = selectedCategory === null ? 'null' : selectedCategory;
 
   const btn = document.querySelector(`[data-category-id="${idToSelect}"]`);
   if (btn) {
-    btn.classList.remove('bg-blue-100', 'border-blue-300');
-    btn.classList.add('bg-blue-300', 'border-blue-500');
+    btn.classList.remove('bg-gray-700', 'border-gray-600', 'hover:bg-gray-600');
+    btn.classList.add('bg-blue-500', 'border-blue-400');
   }
 }
-
 
 // Kliknięcie przycisku -> zapamiętaj i podświetl
 document.addEventListener('click', e => {
