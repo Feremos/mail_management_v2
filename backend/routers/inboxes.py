@@ -3,7 +3,7 @@ from app.models import User, Inbox, UserSelectedInboxes
 from app.dependencies import get_db, get_current_user
 from app.crud import crud_add_user_inbox, crud_get_user_inboxes
 
-from fastapi import APIRouter, Depends, HTTPException, Form, Request, HTML
+from fastapi import APIRouter, Depends, HTTPException, Form, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from pathlib import Path
@@ -70,12 +70,12 @@ def get_selected_inboxes(
 
 @router.delete("/{inbox_id}/unselect")
 def unselect_inbox(
+    request: Request,
     inbox_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    mode: str = "html"
 ):
-    """Usuń skrzynkę z listy wybranych przez użytkownika"""
-    
     user_inbox = db.query(UserSelectedInboxes).filter(
         UserSelectedInboxes.user_id == current_user.user_id,
         UserSelectedInboxes.inbox_id == inbox_id
@@ -87,4 +87,17 @@ def unselect_inbox(
     db.delete(user_inbox)
     db.commit()
 
+    if mode == "html":
+        inboxes = (
+            db.query(Inbox)
+            .join(UserSelectedInboxes, Inbox.inbox_id == UserSelectedInboxes.inbox_id)
+            .filter(UserSelectedInboxes.user_id == current_user.user_id)
+            .all()
+        )
+        return templates.TemplateResponse(
+            "partials/inboxes_list.html",
+            {"request": request, "inboxes": inboxes}
+        )
+
     return {"msg": "Skrzynka usunięta z listy"}
+
