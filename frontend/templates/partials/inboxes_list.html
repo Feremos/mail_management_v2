@@ -1,4 +1,4 @@
-<div class="mb-6">
+<div id ="inboxes-wrapper" class="mb-6">
   <h2 class="font-semibold text-blue-400 mb-3 text-lg flex items-center">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
       <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
@@ -7,7 +7,7 @@
     Twoje skrzynki
   </h2>
   
-  <div class="flex flex-wrap gap-2 mb-4" id="inboxes-column">
+  <div class="flex flex-wrap gap-2 mb-4">
     <!-- Opcja "Wszystkie skrzynki" -->
     <button 
         data-inbox-id="null"
@@ -16,31 +16,35 @@
         hx-target="#emails-column"
         hx-swap="innerHTML"
         onclick="setCurrentInbox(null)">
-        <div class="font-semibold text-blue-300 whitespace-nowrap">Wszystkie skrzynki</div>
+        Wszystkie skrzynki
     </button>
 
-    {% for inbox in inboxes %}
-    <div class="relative group">
-      <button 
-          data-inbox-id="{{ inbox.inbox_id }}"
-          class="inbox-btn bg-gray-700 border border-gray-600 hover:border-blue-400 rounded-lg px-4 py-2 transition-all duration-200 hover:bg-gray-600"
-          hx-get="/emails?inbox_id={{ inbox.inbox_id }}&mode=html"
-          hx-target="#emails-column"
-          hx-swap="innerHTML"
-          onclick="setCurrentInbox('{{ inbox.inbox_id }}')">
-          <div class="font-medium text-blue-300 whitespace-nowrap">{{ inbox.login }}</div>
-      </button>
-      <button
-          hx-delete="/inboxes/{{ inbox.inbox_id }}/unselect"
-          hx-confirm="Na pewno chcesz usunąć skrzynkę '{{ inbox.login }}'?"
-          hx-target="closest .group"
-          hx-swap="innerHTML"
-          class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
-          >
-          ✖
-      </button>
-    </div>
-    {% endfor %}
+   {% for inbox in inboxes %}
+  <div class="relative group inline-block">
+    <button 
+        data-inbox-id="{{ inbox.inbox_id }}"
+        class="inbox-btn bg-gray-700 border border-gray-600 hover:border-blue-400 rounded-lg px-4 py-2 transition-all duration-200 hover:bg-gray-600 w-full"
+        
+        hx-get="/emails?inbox_id={{ inbox.inbox_id }}&mode=html"
+        hx-target="#emails-column"
+        hx-swap="innerHTML"
+        onclick="setCurrentInbox('{{ inbox.inbox_id }}')">
+        {{ inbox.login }}
+    </button>
+
+    <button
+        hx-delete="/inboxes/{{ inbox.inbox_id }}/unselect?mode=html"
+        hx-confirm="Na pewno chcesz usunąć skrzynkę '{{ inbox.login }}'?"
+        hx-target="#inboxes-wrapper"
+        class="absolute top-0 right-0 -mt-2 -mr-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+        type="button"
+        onclick="event.stopPropagation()"
+        >
+        ✖
+    </button>
+  </div>
+  {% endfor %}
+
   </div>
 
   <!-- FORMULARZ DODAWANIA SKRZYNEK -->
