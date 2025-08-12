@@ -8,43 +8,136 @@
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title text-center">Utwórz konto</h3>
+<div class="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-gray-800 p-10 rounded-xl shadow-2xl border border-gray-700">
+        <div class="text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            <h2 class="mt-6 text-3xl font-extrabold text-gray-100">
+                Utwórz konto
+            </h2>
+            <p class="mt-2 text-sm text-gray-400">
+                Wypełnij formularz, aby się zarejestrować
+            </p>
+        </div>
 
-                <!-- Formularz z HTMX i json-enc -->
-                <form 
-                    hx-post="/users/create"
-                    hx-ext="json-enc"  
-                    hx-target="#response"
-                >
-                    <div class="mb-3">
-                        <label>Username</label>
-                        <input type="text" name="username" class="form-control" required>
+        <form 
+            hx-post="/users/create"
+            hx-ext="json-enc"  
+            hx-target="#response"
+            class="mt-8 space-y-6"
+        >
+            <div class="rounded-md shadow-sm space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-300 mb-1">Nazwa użytkownika</label>
+                    <div class="relative">
+                        <input id="username" name="username" type="text" required
+                            class="appearance-none relative block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Wprowadź nazwę użytkownika">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label>Password</label>
-                        <input type="password" name="password" class="form-control" required>
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Hasło</label>
+                    <div class="relative">
+                        <input id="password" name="password" type="password" required
+                            class="appearance-none relative block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Wprowadź hasło">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Zarejestruj się</button>
-                </form>
-
-                <div id="response" class="mt-3 text-center"></div>
+                </div>
             </div>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-green-400 group-hover:text-green-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    Zarejestruj się
+                </button>
+            </div>
+        </form>
+
+        <div id="response" class="mt-4 text-center text-sm"></div>
+        
+        <div class="text-center text-sm text-gray-400">
+            Masz już konto? 
+            <a href="/login" class="font-medium text-blue-500 hover:text-blue-400">
+                Zaloguj się
+            </a>
         </div>
     </div>
 </div>
 
 <!-- Modal sukcesu -->
-<div id="success-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; text-align: center;">
-        <h4>✅ Rejestracja udana!</h4>
-        <p>Zostałeś pomyślnie zarejestrowany.</p>
-        <button onclick="document.getElementById('success-modal').style.display='none'; window.location='/login'" class="btn btn-primary">
-            Zaloguj się
-        </button>
+<div id="success-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-70 z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-xl shadow-xl border border-gray-700 p-8 max-w-md w-full text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <h3 class="mt-3 text-lg font-medium text-gray-100">Rejestracja udana!</h3>
+        <div class="mt-2 text-sm text-gray-400">
+            <p>Zostałeś pomyślnie zarejestrowany.</p>
+        </div>
+        <div class="mt-5">
+            <button onclick="document.getElementById('success-modal').classList.add('hidden'); window.location='/login'" 
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                Zaloguj się
+            </button>
+        </div>
     </div>
 </div>
+
+<style>
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus {
+        -webkit-text-fill-color: #e2e8f0;
+        -webkit-box-shadow: 0 0 0px 1000px #2d3748 inset;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+    
+    #response {
+        min-height: 1.5rem;
+    }
+    
+    #response .error {
+        color: #f87171;
+    }
+    
+    #response .success {
+        color: #34d399;
+    }
+</style>
+
+<script>
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if(evt.detail.successful && evt.detail.requestConfig.path === "/users/create") {
+            const response = JSON.parse(evt.detail.xhr.responseText);
+            if(response.success) {
+                document.getElementById('success-modal').classList.remove('hidden');
+            }
+        }
+    });
+</script>
 {% endblock %}
