@@ -79,3 +79,19 @@ class UserSelectedCategories(Base):
 
     user = relationship("User", back_populates="selected_categories")
     category = relationship("Category", back_populates="user_associations")
+
+class EmailCategory(Base):
+    __tablename__ = "email_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    email_id = Column(Integer, ForeignKey("emails.email_id", ondelete="CASCADE"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id", ondelete="CASCADE"), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'email_id', name='uix_user_email'),
+    )
+
+    user = relationship("User", backref="email_categories")
+    email = relationship("Email", backref="categories")
+    category = relationship("Category")
