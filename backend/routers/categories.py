@@ -58,10 +58,15 @@ def add_user_category(
 
 @router.delete("/{category_id}")
 def remove_user_category(
+    request: Request,
     category_id: int,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     crud_remove_user_category(db, current_user.user_id, category_id)
+    categories = crud_get_user_categories(db,current_user.user_id)
 
-    return {"msg": "Kategoria usunięta"}
+    return templates.TemplateResponse(
+        "partials/categories_list.html",
+        {"request": request, "categories": categories}
+    )

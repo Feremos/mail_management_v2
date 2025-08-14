@@ -49,7 +49,7 @@
 
   <!-- FORMULARZ DODAWANIA SKRZYNEK -->
   <form
-    hx-post="/inboxes/select"
+    hx-post="/inboxes/select?mode=html"
     hx-target="#inboxes-column"
     hx-swap="innerHTML"
     hx-on::after-request="if(event.detail.successful) this.reset()"

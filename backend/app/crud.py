@@ -1,5 +1,5 @@
 from app.schemas import UserCreate,SelectInboxRequest
-from app.models import User, Inbox, UserSelectedInboxes, Email, RevokedToken, UserSelectedCategories, Category
+from app.models import User, Inbox, UserSelectedInboxes, Email, RevokedToken, UserSelectedCategories, Category, UserEmailCategory
 from app.dependencies import Session, get_db
 from app.security import get_password_hash, get_current_user_api
 
@@ -53,42 +53,65 @@ def crud_get_emails_for_user(
     category: str | None = None
 ):
     """
-    Zwraca listę emaili użytkownika z opcjonalnym filtrowaniem po skrzynce i kategorii.
+    Zwraca listę emaili użytkownika z kategorią z tabeli UserEmailCategory.
+    Nadpisuje classification w obiekcie Email, żeby frontend działał bez zmian.
     """
-    # Skrzynki wybrane przez użytkownika
     selected_inbox_ids = [
         selection.inbox_id
-        for selection in db.query(UserSelectedInboxes).filter(
-            UserSelectedInboxes.user_id == user_id
-        ).all()
+        for selection in db.query(UserSelectedInboxes)
+        .filter(UserSelectedInboxes.user_id == user_id)
+        .all()
     ]
-
     if not selected_inbox_ids:
         return []
 
-    # Podstawowy query
-    query = db.query(Email).filter(Email.inbox_id.in_(selected_inbox_ids))
+    query = (
+        db.query(Email, UserEmailCategory.category.label("user_category"))
+        .join(UserEmailCategory, Email.email_id == UserEmailCategory.email_id)
+        .filter(Email.inbox_id.in_(selected_inbox_ids))
+        .filter(UserEmailCategory.user_id == user_id)
+    )
 
-    # Filtr po inbox_id (tylko jeśli ten inbox należy do użytkownika)
     if inbox_id and inbox_id in selected_inbox_ids:
         query = query.filter(Email.inbox_id == inbox_id)
 
-    # Filtr po kategorii
     if category:
-        query = query.filter(Email.classification == category)
+        query = query.filter(UserEmailCategory.category == category)
 
-    return query.order_by(Email.date_received.desc()).all()
+    results = query.order_by(Email.date_received.desc()).all()
+
+    # Nadpisanie classification dla frontendu
+    emails = []
+    for email_obj, user_category in results:
+        email_obj.classification = user_category
+        emails.append(email_obj)
+
+    return emails
+
 
 def crud_get_email_detail(db: Session, user_id: int, email_id: int):
-    email = (
-        db.query(Email)
+    """
+    Zwraca szczegóły emaila z kategorią z UserEmailCategory.
+    Nadpisuje classification w obiekcie Email.
+    """
+    result = (
+        db.query(Email, UserEmailCategory.category.label("user_category"))
         .join(UserSelectedInboxes, Email.inbox_id == UserSelectedInboxes.inbox_id)
-        .filter(UserSelectedInboxes.user_id == user_id, Email.email_id == email_id)
+        .join(UserEmailCategory, Email.email_id == UserEmailCategory.email_id)
+        .filter(
+            UserSelectedInboxes.user_id == user_id,
+            UserEmailCategory.user_id == user_id,
+            Email.email_id == email_id
+        )
         .first()
     )
-    if not email:
+    if not result:
         raise HTTPException(status_code=404, detail="Email not found or not accessible")
-    return email
+
+    email_obj, user_category = result
+    email_obj.classification = user_category
+    return email_obj
+
 
 
 

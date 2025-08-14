@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
@@ -12,7 +12,7 @@ class User(Base):
     
     selected_inboxes = relationship("UserSelectedInboxes", back_populates="user", cascade="all, delete-orphan")
     selected_categories = relationship("UserSelectedCategories", back_populates="user", cascade="all, delete-orphan")
-    
+    email_categories = relationship("UserEmailCategory", back_populates="user", cascade="all, delete-orphan")
 
 class Inbox(Base):
     __tablename__ = "inboxes"
@@ -36,7 +36,6 @@ class Email(Base):
     sent_from = Column(String)
     sent_to = Column(Text)
     subject = Column(String)
-    classification = Column(String)
     body = Column(Text)
     suggested_reply = Column(Text)
     response_text = Column(Text, nullable=True)
@@ -45,7 +44,7 @@ class Email(Base):
     archived = Column(Boolean, default=False)
     
     inbox = relationship("Inbox", backref="emails")
-
+    user_categories = relationship("UserEmailCategory", back_populates="email", cascade="all, delete-orphan")
 
 class UserSelectedInboxes(Base):
     __tablename__ = "user_selected_inboxes"
@@ -79,4 +78,18 @@ class UserSelectedCategories(Base):
 
     user = relationship("User", back_populates="selected_categories")
     category = relationship("Category", back_populates="user_associations")
+    
+class UserEmailCategory(Base):
+    __tablename__ = "user_email_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    email_id = Column(Integer, ForeignKey("emails.email_id"), nullable=False)
+    category = Column(String, nullable=False)
+    
+   
+
+    user = relationship("User", back_populates="email_categories")
+    email = relationship("Email", back_populates="user_categories")
+
 
