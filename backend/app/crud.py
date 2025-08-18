@@ -50,7 +50,7 @@ def crud_get_emails_for_user(
     db: Session,
     user_id: int,
     inbox_id: int | None = None,
-    category: str | None = None
+    category: str | None = None 
 ):
     """
     Zwraca listę emaili użytkownika z kategorią z tabeli UserEmailCategory.
@@ -201,3 +201,54 @@ def crud_get_user_inboxes(db, user_id):
         .filter(UserSelectedInboxes.user_id == user_id)
         .all()
     )
+    
+def crud_update_email_suggested_reply(db: Session, email_id: int, suggested_reply: str):
+    """
+    Aktualizuje sugerowaną odpowiedź dla emaila.
+    """
+    email = db.query(Email).filter(Email.email_id == email_id).first()
+    if not email:
+        raise HTTPException(status_code=404, detail="Email not found")
+    
+    email.suggested_reply = suggested_reply
+    db.commit()
+    db.refresh(email)
+    return email
+
+def crud_update_email_category(db: Session, user_id: int, email_id: int, category: str):
+    """
+    Aktualizuje kategorię emaila dla użytkownika.
+    """
+    # Najpierw sprawdź czy email istnieje i czy użytkownik ma do niego dostęp
+    email = db.query(Email).filter(Email.email_id == email_id).first()
+    if not email:
+        raise HTTPException(status_code=404, detail="Email not found")
+    
+    # Sprawdź czy użytkownik ma dostęp do skrzynki tego emaila
+    user_has_access = db.query(UserSelectedInboxes).filter(
+        UserSelectedInboxes.user_id == user_id,
+        UserSelectedInboxes.inbox_id == email.inbox_id
+    ).first()
+    
+    if not user_has_access:
+        raise HTTPException(status_code=403, detail="Brak dostępu do tego emaila")
+    
+    # Znajdź lub utwórz kategorię użytkownika dla tego emaila
+    user_email_category = db.query(UserEmailCategory).filter(
+        UserEmailCategory.user_id == user_id,
+        UserEmailCategory.email_id == email_id
+    ).first()
+    
+    if user_email_category:
+        user_email_category.category = category
+    else:
+        user_email_category = UserEmailCategory(
+            user_id=user_id,
+            email_id=email_id,
+            category=category
+        )
+        db.add(user_email_category)
+    
+    db.commit()
+    db.refresh(user_email_category)
+    return user_email_category

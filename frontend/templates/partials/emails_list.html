@@ -1,3 +1,29 @@
+<!-- Dodaj do emails_list.html -->
+<div class="mb-4 flex justify-between items-center">
+    <h3 class="text-lg font-semibold text-blue-400">Wiadomości</h3>
+    <div class="flex space-x-2">
+        <button 
+            hx-post="/emails/reanalyze?mode=html"
+            hx-target="#emails-column"
+            hx-swap="innerHTML"
+            class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+            Przeanalizuj ponownie
+        </button>
+        <button 
+            hx-post="/emails/fetch?mode=html"
+            hx-target="#emails-column"
+            hx-swap="innerHTML"
+            class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+            Pobierz nowe maile
+        </button>
+    </div>
+</div>
 {% if emails %}
 <ul class="divide-y divide-gray-700">
     {% for email in emails %}

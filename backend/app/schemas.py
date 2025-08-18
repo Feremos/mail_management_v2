@@ -75,3 +75,16 @@ class InboxSelectionResponse(BaseModel):
         
 class CategoryCreate(BaseModel):
     name: str
+    
+    
+class EmailUpdateCategory(BaseModel):
+    category: str
+
+class EmailUpdateReply(BaseModel):
+    suggested_reply: str
+
+class EmailAnalyzeResponse(BaseModel):
+    message: str
+    category: str
+    summary: str
+    suggested_reply: str

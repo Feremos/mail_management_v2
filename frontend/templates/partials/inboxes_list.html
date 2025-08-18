@@ -50,31 +50,34 @@
   <!-- FORMULARZ DODAWANIA SKRZYNEK -->
   <form
     hx-post="/inboxes/select?mode=html"
-    hx-target="#inboxes-column"
+    hx-target="#inboxes-wrapper"
     hx-swap="innerHTML"
-    hx-on::after-request="if(event.detail.successful) this.reset()"
+    hx-on::after-request="if(event.detail.successful) { 
+        // Po dodaniu skrzynki, automatycznie pobierz maile
+        htmx.ajax('POST', '/emails/fetch?mode=html', {target: '#emails-column', swap: 'innerHTML'});
+    }"
     class="space-y-3">
     <input
-      type="text"
-      name="login"
-      placeholder="Login (email)"
-      required
-      class="w-full bg-gray-700 text-gray-200 rounded-lg border border-gray-600 focus:border-blue-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 placeholder-gray-400"
+        type="text"
+        name="login"
+        placeholder="Login (email)"
+        required
+        class="w-full bg-gray-700 text-gray-200 rounded-lg border border-gray-600 focus:border-blue-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 placeholder-gray-400"
     />
     <input
-      type="password"
-      name="password"
-      placeholder="Hasło"
-      required
-      class="w-full bg-gray-700 text-gray-200 rounded-lg border border-gray-600 focus:border-blue-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 placeholder-gray-400"
+        type="password"
+        name="password"
+        placeholder="Hasło"
+        required
+        class="w-full bg-gray-700 text-gray-200 rounded-lg border border-gray-600 focus:border-blue-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 placeholder-gray-400"
     />
     <button
-      type="submit"
-      class="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-      </svg>
-      Dodaj skrzynkę
+        type="submit"
+        class="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        Dodaj skrzynkę
     </button>
   </form>
 </div>
